@@ -39,7 +39,9 @@ y ∈ {WALKING, WALKING_UPSTAIRS, WALKING_DOWNSTAIRS, SITTING, STANDING, LAYING}
 
 ## 4. Métricas de desempeño
 
---
+Machine learning: accuracy global, precisión/recall/F1 por clase (macro y ponderado), matriz de confusión, y validación cruzada por sujeto (leave-subjects-out) para estimar generalización a usuarios nuevos.
+
+Negocio: latencia de inferencia por ventana (ms) para viabilidad de on-device inference, consumo computacional/energético, tasa de falsos negativos en clases de riesgo (p. ej. detección de inactividad/caídas), y robustez ante sujetos/dispositivos no vistos en entrenamiento.
 
 ## 5. Referencias y resultados previos
 
