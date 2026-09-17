@@ -4,7 +4,7 @@ Entrega 1 (propuesta y línea base).
 
 Reporte completo de la propuesta: [`docs/ENTREGA1.PDF`](docs/ENTREGA1.PDF)
 
-Análisis exploratorio que sustenta el reporte: [`notebooks/01_analisis_exploratorio.ipynb`](notebooks/01_analisis_exploratorio.ipynb) ([abrir en Colab](https://colab.research.google.com/github/DagLiefde/Reconocimiento-Actividad/blob/main/notebooks/01_analisis_exploratorio.ipynb))
+Análisis exploratorio que sustenta el reporte: [`notebooks/01_analisis_exploratorio.ipynb`](notebooks/01_analisis_exploratorio.ipynb) ([abrir en Colab](https://colab.research.google.com/github/garcialvarez/HAR/blob/main/notebooks/01_analisis_exploratorio.ipynb))
 
 ## 1. Contexto de aplicación
 
