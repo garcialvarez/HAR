@@ -10,8 +10,6 @@ Métricas, latencia, tamaño de modelo y gráficas comunes a todos los notebooks
 from __future__ import annotations
 
 import json
-import os
-import tempfile
 import time
 from pathlib import Path
 
@@ -50,11 +48,12 @@ def measure_latency(predict_fn, X: np.ndarray, n: int = 100, rounds: int = 3) ->
 
 
 def keras_model_size_kb(model) -> float:
-    """Tamaño en KB del modelo Keras guardado en formato .keras."""
-    with tempfile.TemporaryDirectory() as d:
-        path = os.path.join(d, "m.keras")
-        model.save(path)
-        return os.path.getsize(path) / 1024
+    """
+    Tamaño en KB de los pesos del modelo en float32 (4 bytes por valor), que es lo que habría que
+    desplegar. No se usa `model.save`/`save_weights`: en Keras 3 guardan también el estado del
+    optimizador (Adam), lo que triplica el archivo y no se necesita para inferir.
+    """
+    return sum(int(np.prod(w.shape)) for w in model.weights) * 4 / 1024
 
 
 def evaluate_and_save(model_id: str, family: str, y_true, y_pred, class_names, *,
