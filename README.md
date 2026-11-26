@@ -8,7 +8,7 @@ Proyecto final — curso *Fundamentos de Deep Learning*, Ingeniería de Sistemas
 |---|---|
 | Informe ejecutivo (Entrega 2) | [`INFORME_PROYECTO.PDF`](INFORME_PROYECTO.PDF) |
 | Propuesta (Entrega 1) | [`ENTREGA1.PDF`](ENTREGA1.PDF) |
-| **Video de presentación (YouTube)** | _Pendiente: el enlace se agrega aquí al publicar el video._ |
+| **Video de presentación (YouTube)** | _Pendiente_ |
 
 ## 1. El problema
 
@@ -32,11 +32,11 @@ Se ejecutan **directamente en Google Colab** (cada uno clona el repositorio, ins
 | 02 | [`02_preprocesado.ipynb`](02_preprocesado.ipynb) | Normalización, magnitudes, integración numérica y deriva, STFT, fuga de información, esquema de validación | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/garcialvarez/HAR/blob/main/02_preprocesado.ipynb) |
 | 03 | [`03_linea_base_features.ipynb`](03_linea_base_features.ipynb) | Regresión Logística, Random Forest y SVM sobre las 561 features | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/garcialvarez/HAR/blob/main/03_linea_base_features.ipynb) |
 | 04 | [`04_cnn1d_dominio_tiempo.ipynb`](04_cnn1d_dominio_tiempo.ipynb) | CNN 1D: canales crudos, magnitudes, velocidad integrada, aumento de datos | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/garcialvarez/HAR/blob/main/04_cnn1d_dominio_tiempo.ipynb) |
-| 05 | [`05_recurrentes_lstm.ipynb`](05_recurrentes_lstm.ipynb) | LSTM, DRNN de 4 capas (artículo de referencia), BiLSTM, CNN-LSTM | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/garcialvarez/HAR/blob/main/05_recurrentes_lstm.ipynb) |
+| 05 | [`05_recurrentes_lstm.ipynb`](05_recurrentes_lstm.ipynb) | LSTM, BiLSTM, CNN-LSTM y la DRNN de 4 capas del artículo (versión final con salida promediada en el tiempo); diagnóstico de por qué el artículo reporta 96.7 % | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/garcialvarez/HAR/blob/main/05_recurrentes_lstm.ipynb) |
 | 06 | [`06_cnn2d_tiempo_frecuencia.ipynb`](06_cnn2d_tiempo_frecuencia.ipynb) | CNN 2D sobre espectrogramas (dos resoluciones, con y sin magnitudes) | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/garcialvarez/HAR/blob/main/06_cnn2d_tiempo_frecuencia.ipynb) |
 | 07 | [`07_comparacion_y_validacion_sujetos.ipynb`](07_comparacion_y_validacion_sujetos.ipynb) | Finalistas de cada familia: test oficial y validación cruzada por sujeto sobre los 30 voluntarios | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/garcialvarez/HAR/blob/main/07_comparacion_y_validacion_sujetos.ipynb) |
 
-**Tiempos aproximados en CPU** (sin contar ≈ 1 min de descarga la primera vez)**:** 01 ≈ 15 s · 02 ≈ 1 min · 03 ≈ 3 min · 04 ≈ 5 min · 05 ≈ 15 min · 06 ≈ 6 min · 07 ≈ 17 min. En Colab, los notebooks 05 y 07 se aceleran mucho con GPU (*Entorno de ejecución → Cambiar tipo de entorno de ejecución → GPU*).
+**Tiempos aproximados en CPU** (sin contar ≈ 1 min de descarga la primera vez)**:** 01 ≈ 15 s · 02 ≈ 1 min · 03 ≈ 3 min · 04 ≈ 5 min · 05 ≈ 58 min · 06 ≈ 6 min · 07 ≈ 17 min. En Colab, los notebooks 05 y 07 se aceleran mucho con GPU (*Entorno de ejecución → Cambiar tipo de entorno de ejecución → GPU*).
 
 ## 3. Resultados
 
@@ -57,7 +57,7 @@ Cada familia se resume con su finalista, elegido por la pérdida de validación 
 - Las **561 features con un SVM ganan** en ambos protocolos (en línea con el 96.0 % de Anguita et al., 2013). Ninguna red superó a la línea base clásica.
 - Entre las redes **el ranking depende de la partición**: la CNN 2D parece la mejor en el test oficial (9 sujetos) y es la peor en la validación cruzada. Las diferencias entre modalidades (1–2 puntos) son del orden del ruido entre sujetos y semillas, así que **no concluimos que una modalidad sea superior**.
 - El error se concentra en **sentado ↔ de pie**; hay sujetos difíciles para casi todos los modelos.
-- **No reproducimos el 96.7 %** de la DRNN de 4 capas de Murad & Pyun (2017): con nuestro protocolo estricto por sujeto obtiene ≈ 88.9 % (notebook 05). No determinamos la causa.
+- **¿Por qué la DRNN no llega al 96.7 % de Murad & Pyun (2017)?** El artículo parte los datos 80/20 al azar (los mismos sujetos quedan en entrenamiento y prueba), promedia la salida de todos los pasos de tiempo y no reporta sus hiperparámetros. Con validación por sujeto, nuestra DRNN fiel al artículo obtiene 90.6 ± 1.2 %; **con el protocolo del artículo, la misma red llega a 95.7 %**. La brecha se debe sobre todo a la partición, no a la arquitectura (notebook 05, sección 5).
 - La integración numérica corregida reduce la deriva (el cociente señal/deriva pasa de 6.9 a 25.2, notebook 02), pero **como entrada de la red no mejoró la accuracy** (experimento A3).
 
 ## 4. Datos
