@@ -24,24 +24,29 @@ RESULTS_DIR = REPO_ROOT / "results"
 FIGURES_DIR = REPO_ROOT / "figures"
 
 
-def measure_latency(predict_fn, X: np.ndarray, n: int = 200) -> dict:
+def measure_latency(predict_fn, X: np.ndarray, n: int = 100, rounds: int = 3) -> dict:
     """
     Latencia de inferencia en ms por ventana.
 
     predict_fn: función que recibe un lote (k, ...) y devuelve predicciones.
-    Devuelve la mediana con lote de 1 (escenario on-device) y el costo por ventana con lote completo.
+    - single_ms: mediana con lote de 1 (escenario on-device). Se repite en `rounds` rondas y se toma la
+      mejor, para que una interferencia puntual del sistema no distorsione la cifra.
+    - batch_ms: costo por ventana procesando todo el conjunto de una vez.
     """
     n = min(n, len(X))
     predict_fn(X[:1])  # calentamiento (compilación / caches)
-    single = []
-    for i in range(n):
-        t0 = time.perf_counter()
-        predict_fn(X[i:i + 1])
-        single.append((time.perf_counter() - t0) * 1000)
+    medianas = []
+    for _ in range(rounds):
+        single = []
+        for i in range(n):
+            t0 = time.perf_counter()
+            predict_fn(X[i:i + 1])
+            single.append((time.perf_counter() - t0) * 1000)
+        medianas.append(np.median(single))
     t0 = time.perf_counter()
     predict_fn(X)
     batch_ms = (time.perf_counter() - t0) * 1000 / len(X)
-    return {"single_ms": float(np.median(single)), "batch_ms": float(batch_ms)}
+    return {"single_ms": float(min(medianas)), "batch_ms": float(batch_ms)}
 
 
 def keras_model_size_kb(model) -> float:
