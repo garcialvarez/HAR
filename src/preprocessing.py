@@ -92,6 +92,24 @@ def integrate_velocity(body_acc: np.ndarray, fs: float = FS, highpass_hz: float 
     return v.astype(np.float32)
 
 
+def make_channels(X: np.ndarray, variant: str = "raw") -> np.ndarray:
+    """
+    Construye el conjunto de canales de entrada para los modelos en el dominio del tiempo.
+
+    - "raw":     los 9 canales originales.
+    - "mag":     9 + 3 magnitudes = 12 canales.
+    - "mag_vel": 12 + 3 de velocidad integrada y corregida (body_acc) = 15 canales.
+    """
+    if variant == "raw":
+        return X
+    M = add_magnitudes(X)
+    if variant == "mag":
+        return M
+    if variant == "mag_vel":
+        return np.concatenate([M, integrate_velocity(X[..., 0:3])], axis=-1)
+    raise ValueError(f"variante desconocida: {variant!r}")
+
+
 def compute_stft(X: np.ndarray, fs: float = FS, nperseg: int = 32, noverlap: int | None = None) -> np.ndarray:
     """
     Espectrograma log(1+|STFT|) por canal. (N, T, C) -> (N, F, T', C).
