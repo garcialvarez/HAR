@@ -6,12 +6,14 @@ Smartphones" (UCI HAR Dataset) a partir del .zip original o de una carpeta
 ya descomprimida.
 
 El dataset debe estar disponible en `data/raw/UCI_HAR_Dataset.zip`
-(ver README del proyecto). Si aún no ha sido descomprimido, este módulo
+(ver data/README.md; `download_dataset()` lo descarga). Si aún no ha sido descomprimido, este módulo
 lo descomprime automáticamente en `data/raw/UCI_HAR_Dataset/`.
 """
 
 from __future__ import annotations
 
+import time
+import urllib.request
 import zipfile
 from pathlib import Path
 
@@ -22,6 +24,10 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = REPO_ROOT / "data" / "raw"
 ZIP_PATH = RAW_DIR / "UCI_HAR_Dataset.zip"
 EXTRACT_DIR = RAW_DIR / "UCI_HAR_Dataset"
+DATASET_URL = (
+    "https://archive.ics.uci.edu/static/public/240/"
+    "human+activity+recognition+using+smartphones.zip"
+)
 
 ACTIVITY_NAMES = {
     1: "WALKING",
@@ -72,6 +78,40 @@ def ensure_extracted() -> Path:
         spaced_dir.rename(EXTRACT_DIR)
 
     return EXTRACT_DIR
+
+
+def download_dataset(retries: int = 3) -> Path:
+    """
+    Descarga el UCI HAR Dataset a `data/raw/UCI_HAR_Dataset.zip` (si no existe)
+    y lo descomprime. Devuelve la ruta de la carpeta extraída.
+
+    Si la descarga falla tras `retries` intentos, indica cómo hacerla a mano.
+    """
+    if EXTRACT_DIR.exists() and any(EXTRACT_DIR.iterdir()):
+        return EXTRACT_DIR
+
+    RAW_DIR.mkdir(parents=True, exist_ok=True)
+    if not ZIP_PATH.exists():
+        last_err = None
+        for attempt in range(1, retries + 1):
+            try:
+                print(f"Descargando dataset (intento {attempt}/{retries})...")
+                req = urllib.request.Request(DATASET_URL, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req, timeout=60) as resp, open(ZIP_PATH, "wb") as f:
+                    f.write(resp.read())
+                break
+            except Exception as err:  # red caída, timeout, 5xx...
+                last_err = err
+                ZIP_PATH.unlink(missing_ok=True)
+                time.sleep(2 * attempt)
+        else:
+            raise RuntimeError(
+                f"No se pudo descargar el dataset ({last_err}). Descárgalo a mano desde "
+                f"{DATASET_URL} y guárdalo como {ZIP_PATH} (ver data/README.md)."
+            )
+        print(f"Descargado: {ZIP_PATH.stat().st_size / 1e6:.1f} MB")
+
+    return ensure_extracted()
 
 
 def _load_split(base: Path, split: str) -> tuple[pd.DataFrame, pd.Series, pd.Series]:
@@ -134,6 +174,24 @@ def load_raw_signals(split: str = "train") -> tuple[np.ndarray, pd.Series, pd.Se
     subjects = pd.read_csv(base / split / f"subject_{split}.txt", header=None, names=["subject_id"])["subject_id"]
 
     return X, y, subjects
+
+
+def load_all_features() -> tuple[pd.DataFrame, pd.Series, pd.Series]:
+    """Concatena train + test (10,299 ventanas, 30 sujetos). Para validación cruzada por sujeto."""
+    Xa, ya, sa = load_features("train")
+    Xb, yb, sb = load_features("test")
+    return (pd.concat([Xa, Xb], ignore_index=True),
+            pd.concat([ya, yb], ignore_index=True),
+            pd.concat([sa, sb], ignore_index=True))
+
+
+def load_all_raw() -> tuple[np.ndarray, pd.Series, pd.Series]:
+    """Señales crudas de train + test concatenadas: X (10299, 128, 9)."""
+    Xa, ya, sa = load_raw_signals("train")
+    Xb, yb, sb = load_raw_signals("test")
+    return (np.concatenate([Xa, Xb], axis=0),
+            pd.concat([ya, yb], ignore_index=True),
+            pd.concat([sa, sb], ignore_index=True))
 
 
 if __name__ == "__main__":

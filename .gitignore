@@ -1,12 +1,12 @@
 # Dataset crudo (se descarga y descomprime automáticamente, ver data/README.md)
-data/raw/UCI_HAR_Dataset/
-data/raw/UCI HAR Dataset/
-data/raw/*.zip
-data/raw/*.names
+data/raw/*
+!data/raw/.gitkeep
+data/processed/
 
-# Resultados generados por los scripts (no versionados, se regeneran)
-results/*.json
-results/*.png
+# Artefactos generados al ejecutar los notebooks (no se versionan, se regeneran)
+results/
+figures/
+models/
 
 # Python
 __pycache__/
@@ -18,4 +18,3 @@ venv/
 
 # Sistema
 .DS_Store
-!data/raw/.gitkeep
